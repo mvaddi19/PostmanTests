@@ -1,0 +1,345 @@
+{
+	"info": {
+		"_postman_id": "cfdc6271-4930-4ab6-b4bd-8b3798522688",
+		"name": "RICE RTC-58",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "646dc6f2-a09f-4356-bf7a-fa306fb0bf8d",
+						"exec": [
+							"var data = JSON.parse(responseBody);",
+							"//pm.environment.set(\"token\", data.access_token);",
+							"pm.globals.set(\"token\", data.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{rice_client_id}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{rice_client_secret}}",
+							"type": "text"
+						},
+						{
+							"key": "audience",
+							"value": "machine-to-machine-access",
+							"type": "text"
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "https://dev.auth.airmiles.ca/oauth/token",
+					"protocol": "https",
+					"host": [
+						"dev",
+						"auth",
+						"airmiles",
+						"ca"
+					],
+					"path": [
+						"oauth",
+						"token"
+					]
+				},
+				"description": "Get access_token from Auth0 to use in other requests. For each requests below, we must get token first."
+			},
+			"response": []
+		},
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{rice_domain}}/{{rice_resource}}/rice/health",
+					"host": [
+						"{{rice_domain}}"
+					],
+					"path": [
+						"{{rice_resource}}",
+						"rice",
+						"health"
+					]
+				},
+				"description": "Health check for AM Cash API"
+			},
+			"response": []
+		},
+		{
+			"name": "Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "73422e5e-f211-49e7-bb7e-5668e9cb0c55",
+						"exec": [
+							"//Confirm a successful status code",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"     pm.response.to.be.withBody;",
+							"     pm.response.to.be.json; ",
+							"});",
+							"",
+							"//Verify the application header type is app json",
+							"var contentTypeHeaderExists = responseHeaders.hasOwnProperty(\"Content-Type\");",
+							" ",
+							"tests[\"Has Content-Type\"] = contentTypeHeaderExists;",
+							" ",
+							"if (contentTypeHeaderExists) {",
+							"    tests[\"Content-Type is application/json\"] = ",
+							"      responseHeaders[\"Content-Type\"].has(\"application/json\");",
+							"}",
+							"",
+							"//Series of smoke tests",
+							"",
+							"//Validate Items",
+							"pm.test(\"Validate Items info is correct\", function () {",
+							"    var jsonData = pm.response.json();console.log(jsonData);",
+							"    pm.expect(jsonData.items[0].number).to.eql(2);",
+							"    pm.expect(jsonData.items[0].name).to.eql(\"beans\");",
+							"    pm.expect(jsonData.items[0].quantity).to.eql(4);",
+							"    pm.expect(jsonData.items[0].baseAmount).to.eql(8);  ",
+							"    pm.expect(jsonData.items[0].finalAmount).to.eql(10);",
+							"    pm.expect(jsonData.items[0].id).to.eql(\"1234\");",
+							"    ",
+							"    ",
+							"});",
+							"",
+							"//Validate Sponsor code",
+							"pm.test(\"Sponsor Code is correct\", function () {",
+							"    var jsonData = pm.response.json();console.log(jsonData);",
+							"    pm.expect(jsonData.sponsorCode).to.eql(\"APAP\");",
+							"    ",
+							"});",
+							"",
+							"// Location code ",
+							"pm.test(\"Verify locationCode\", function(){",
+							"    var jsonData = pm.response.json(); ",
+							"    console.log(jsonData);",
+							"    pm.expect(jsonData.locationCode).to.eql(\"0037\");",
+							"   ",
+							"});",
+							"",
+							"",
+							"// Include a test for the collector number",
+							"",
+							"//response status should be equal to confirmed",
+							"pm.test(\"Verify CONFIRMED status \", function(){",
+							"    var jsonData = pm.response.json(); ",
+							"    pm.expect(jsonData.issuances[0].status).to.eql(\"CONFIRMED\");",
+							"}) ;  ",
+							"",
+							"// response error should be false",
+							"pm.test(\"Verify there are no errors \", function(){",
+							"    var jsonData = pm.response.json(); ",
+							"    pm.expect(jsonData.issuances[0].errors).to.eql(null);",
+							"}) ; ",
+							"",
+							"pm.test(\"Verify confirmation number is populated\", function(){",
+							"    var jsonData = pm.response.json(); ",
+							"    pm.expect(jsonData.issuances[0].confirmationNumber).to.not.eql(null);",
+							"}) ; ",
+							"    ",
+							"pm.test(\"Verify processedDateTime is populated\", function(){",
+							"    var jsonData = pm.response.json(); ",
+							"    pm.expect(jsonData.issuances[0].processedDateTime).to.not.eql(null);    ",
+							"}) ; ",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"    ",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "X-Request-Id",
+						"value": "5da9272b-023a-403a-826c-4264def7dc48",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"basketPostTaxAmount\": 10,\n    \"basketPreTaxAmount\": 8,\n    \"checkoutDateTime\": \"2019-04-22T14:12:59.479Z\",\n    \"checkoutTransactionId\": \"12340001111\",\n    \"collectorNumber\": \"80085102028\",\n    \"deviceId\": \"string\",\n    \"items\": [\n        {\n            \"number\": \"2\",\n            \"name\": \"beans\",\n            \"baseAmount\": 8,\n            \"finalAmount\": 10,\n            \"id\": \"1234\",\n            \"quantity\": 4\n        }\n    ],\n    \"locationCode\": \"0037\",\n    \"sponsorCode\": \"APAP\",\n    \"tender\": [\n        \"CASH\"\n    ],\n    \"issuances\": [\n        {\n            \"offerId\": 22,\n            \"milesAmount\": 8,\n            \"offerDescription\": \"offer\",\n            \"issuanceOfferCode\": \"STANDARD\",\n            \"locationCode\": \"0037\"\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{rice_domain}}/{{rice_resource}}/partners/issuance/post",
+					"host": [
+						"{{rice_domain}}"
+					],
+					"path": [
+						"{{rice_resource}}",
+						"partners",
+						"issuance",
+						"post"
+					]
+				},
+				"description": "Pre-calculated issuance"
+			},
+			"response": [
+				{
+					"name": "Post",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-Id",
+								"value": "5da9272b-023a-403a-826c-4264def7dc48",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"basketPostTaxAmount\": 10,\n    \"basketPreTaxAmount\": 8,\n    \"checkoutDateTime\": \"2019-04-22T14:12:59.479Z\",\n    \"checkoutTransactionId\": \"12340001111\",\n    \"collectorNumber\": \"80085102028\",\n    \"deviceId\": \"string\",\n    \"items\": [\n        {\n            \"number\": \"1\",\n            \"name\": \"beans\",\n            \"baseAmount\": 8,\n            \"finalAmount\": 10,\n            \"id\": \"1234\",\n            \"quantity\": 4\n        }\n    ],\n    \"locationCode\": \"0037\",\n    \"sponsorCode\": \"APAP\",\n    \"tender\": [\n        \"CASH\"\n    ],\n    \"issuances\": [\n        {\n            \"offerId\": null,\n            \"milesAmount\": 8,\n            \"offerDescription\": \"offer\",\n            \"issuanceOfferCode\": \"STANDARD\",\n            \"locationCode\": \"0037\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{rice_domain}}/{{rice_resource}}/partners/issuance/post",
+							"host": [
+								"{{rice_domain}}"
+							],
+							"path": [
+								"{{rice_resource}}",
+								"partners",
+								"issuance",
+								"post"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=UTF-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 29 Apr 2019 22:55:00 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Member Resource Server"
+						},
+						{
+							"key": "X-Request-ID",
+							"value": "5da9272b-023a-403a-826c-4264def7dc48"
+						},
+						{
+							"key": "X-Kong-Upstream-Latency",
+							"value": "253"
+						},
+						{
+							"key": "X-Kong-Proxy-Latency",
+							"value": "0"
+						},
+						{
+							"key": "Via",
+							"value": "kong/0.11.1, 1.1 5f5ca5852c74982e7459707a6c9e215a.cloudfront.net (CloudFront)"
+						},
+						{
+							"key": "X-Cache",
+							"value": "Miss from cloudfront"
+						},
+						{
+							"key": "X-Amz-Cf-Id",
+							"value": "4fHH59NeRyvcWLoUD0VxTQ3GxHHUxthN_281jdj1rFZBs60WKr_3hQ=="
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"checkoutTransactionId\": \"12340001111\",\n    \"transactionId\": \"fd4d6b0a-c07e-4aab-8a23-5a7e4a1128a0\",\n    \"sponsorCode\": \"APAP\",\n    \"checkoutDateTime\": \"2019-04-22T14:12:59.479+0000\",\n    \"collectorNumber\": \"80085102028\",\n    \"locationCode\": \"0037\",\n    \"deviceId\": \"string\",\n    \"basketPreTaxAmount\": 8,\n    \"basketPostTaxAmount\": 10,\n    \"basketHSTAmount\": 0,\n    \"basketGSTAmount\": 0,\n    \"basketPSTAmount\": 0,\n    \"basketQSTAmount\": 0,\n    \"tender\": [\n        \"CASH\"\n    ],\n    \"items\": [\n        {\n            \"number\": \"1\",\n            \"name\": \"beans\",\n            \"quantity\": 4,\n            \"baseAmount\": 8,\n            \"finalAmount\": 10,\n            \"id\": \"1234\"\n        }\n    ],\n    \"issuances\": [\n        {\n            \"offerId\": null,\n            \"issuanceOfferCode\": \"STANDARD\",\n            \"offerDescription\": \"offer\",\n            \"locationCode\": \"0037\",\n            \"milesAmount\": 8,\n            \"contributingItemIds\": [],\n            \"confirmationNumber\": \"a62f8fd8-6628-404d-aa3e-85fb3608cdf0\",\n            \"processedDateTime\": \"2019-04-29T22:55:00.965+0000\",\n            \"status\": \"CONFIRMED\",\n            \"errors\": null\n        }\n    ]\n}"
+				}
+			]
+		}
+	]
+}

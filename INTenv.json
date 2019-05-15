@@ -1,0 +1,45 @@
+{
+	"id": "874a5264-9eaf-4d80-bfb0-b3a95ad9f39e",
+	"name": "AWS INT - RICE",
+	"values": [
+		{
+			"key": "rice_domain",
+			"value": "https://dev.api.loyalty.com",
+			"enabled": true
+		},
+		{
+			"key": "rice_client_id",
+			"value": "mlvPWKpFxGkEosiDPiLg4XRZYmQo3Zzn",
+			"description": "",
+			"enabled": true
+		},
+		{
+			"key": "rice_client_secret",
+			"value": "vk88Pe32dVLEqEEjdppVNPOS1iwiD_qM5WG6aAucaRUTfpezC-eXhz4t8pANmMI3",
+			"description": "",
+			"enabled": true
+		},
+		{
+			"key": "rice_resource",
+			"value": "v1",
+			"description": "",
+			"enabled": true
+		},
+		{
+			"key": "collectorNumber",
+			"value": "84156164880",
+			"description": "",
+			"enabled": true
+		},
+		{
+			"key": "rice_auth_domain",
+			"value": "https://dev.auth.airmiles.ca",
+			"type": "text",
+			"description": "",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2019-05-15T19:31:09.151Z",
+	"_postman_exported_using": "Postman/7.0.7"
+}
